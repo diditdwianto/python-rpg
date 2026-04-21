@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Knight - Cookie RPG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            border: 3px double #00ff41;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            background: #0f0f1a;
+        }
+
+        .section {
+            border: 1px solid #00ff41;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .currencies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .currency {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .currency-icon {
+            font-size: 20px;
+        }
+
+        .game-area {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            background: #0a0a12;
+        }
+
+        .game-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid #00ff41;
+            pointer-events: none;
+        }
+
+        #character {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1;
+            white-space: pre;
+            transition: all 0.5s ease;
+            color: #00ff41;
+        }
+
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .stat {
+            font-size: 16px;
+        }
+
+        .equipment {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .equip-slot {
+            border: 1px solid #00ff41;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: #1a1a2e;
+            color: #00ff41;
+            border: 2px solid #00ff41;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #00ff41;
+            color: #1a1a2e;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0f0f1a;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #00ff41;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #00ff41;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .shop-item, .inventory-item, .quest-item {
+            border: 1px solid #00ff41;
+            padding: 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item:hover, .inventory-item:hover {
+            background: #00ff4120;
+        }
+
+        .item-stats {
+            font-size: 12px;
+            color: #00cc33;
+        }
+
+        .item-cost {
+            font-size: 12px;
+            color: #ffcc00;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            padding: 5px 15px;
+            cursor: pointer;
+            border: 1px solid #00ff41;
+        }
+
+        .tab.active {
+            background: #00ff41;
+            color: #1a1a2e;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .not-equipped {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="section currencies">
+            <div class="currency"><span class="currency-icon">🍪</span> Cookie: <span id="cookie-count">0</span></div>
+            <div class="currency"><span class="currency-icon">🌭</span> Sausage: <span id="sausage-count">0</span></div>
+            <div class="currency"><span class="currency-icon">🍞</span> Bread: <span id="bread-count">0</span></div>
+            <div class="currency"><span class="currency-icon">🪙</span> Gold: <span id="gold-count">0</span></div>
+        </div>
+
+        <div class="section game-area">
+            <div class="game-border"></div>
+            <div id="character">
+       ,,,,
+      /    \
+     | O  O |
+     |  __  |
+     | |  | |
+      \|__|/
+       |  |
+      /|  |\
+     / |  | \
+    /__|  |__\</div>
+        </div>
+
+        <div class="section stats">
+            <div class="stat">❤️ HP: <span id="hp">100</span></div>
+            <div class="stat">💧 MP: <span id="mp">50</span></div>
+            <div class="stat">⚔️ Damage: <span id="damage">10</span></div>
+            <div class="stat">🛡️ Defense: <span id="defense">5</span></div>
+        </div>
+
+        <div class="section equipment">
+            <div class="equip-slot">Helmet: <span id="eq-helmet" class="not-equipped">None</span></div>
+            <div class="equip-slot">Armor: <span id="eq-armor" class="not-equipped">None</span></div>
+            <div class="equip-slot">Weapon: <span id="eq-weapon" class="not-equipped">None</span></div>
+            <div class="equip-slot">Shield: <span id="eq-shield" class="not-equipped">None</span></div>
+            <div class="equip-slot">Boots: <span id="eq-boots" class="not-equipped">None</span></div>
+            <div class="equip-slot">Accessory: <span id="eq-accessory" class="not-equipped">None</span></div>
+        </div>
+
+        <div class="section actions">
+            <button class="btn" onclick="openShop()">Shop</button>
+            <button class="btn" onclick="openInventory()">Inventory</button>
+            <button class="btn" onclick="openQuests()">Quests</button>
+            <button class="btn" onclick="saveGame()">Save</button>
+        </div>
+    </div>
+
+    <div class="modal" id="shop-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Shop</h2>
+                <button class="close-btn" onclick="closeModal('shop-modal')">&times;</button>
+            </div>
+            <div id="shop-items"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="inventory-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Inventory</h2>
+                <button class="close-btn" onclick="closeModal('inventory-modal')">&times;</button>
+            </div>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('inventory-list')">Items</div>
+                <div class="tab" onclick="switchTab('equipped-list')">Equipped</div>
+            </div>
+            <div id="inventory-list" class="tab-content active"></div>
+            <div id="equipped-list" class="tab-content"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="quests-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Quests</h2>
+                <button class="close-btn" onclick="closeModal('quests-modal')">&times;</button>
+            </div>
+            <div id="quest-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const KNIGHT_SPRITE = `       ,,,,
+      /    \\
+     | O  O |
+     |  __  |
+     | |  | |
+      \\|__|/
+       |  |
+      /|  |\\
+     / |  | \\
+    /__|  |__\\`;
+
+        let gameState = {
+            currencies: { cookie: 0, sausage: 0, bread: 0, gold: 0 },
+            stats: { hp: 100, mp: 50, damage: 10, defense: 5 },
+            equipment: { helmet: null, armor: null, weapon: null, shield: null, boots: null, accessory: null },
+            inventory: []
+        };
+
+        const itemData = {
+            "wooden_sword": { name: "Wooden Sword", slot: "weapon", stats: { damage: 5 } },
+            "iron_sword": { name: "Iron Sword", slot: "weapon", stats: { damage: 15 } },
+            "steel_sword": { name: "Steel Sword", slot: "weapon", stats: { damage: 30 } },
+            "leather_cap": { name: "Leather Cap", slot: "helmet", stats: { hp: 10 } },
+            "iron_helmet": { name: "Iron Helmet", slot: "helmet", stats: { hp: 25, defense: 3 } },
+            "leather_armor": { name: "Leather Armor", slot: "armor", stats: { hp: 20, defense: 2 } },
+            "chainmail": { name: "Chainmail", slot: "armor", stats: { hp: 50, defense: 5 } },
+            "wooden_shield": { name: "Wooden Shield", slot: "shield", stats: { defense: 3, hp: 10 } },
+            "iron_shield": { name: "Iron Shield", slot: "shield", stats: { defense: 8, hp: 25 } },
+            "speed_boots": { name: "Speed Boots", slot: "boots", stats: { hp: 15 } },
+            "health_boots": { name: "Health Boots", slot: "boots", stats: { hp: 40 } },
+            "mana_ring": { name: "Mana Ring", slot: "accessory", stats: { mp: 30, damage: 3 } },
+            "power_amulet": { name: "Power Amulet", slot: "accessory", stats: { damage: 10, mp: 20 } }
+        };
+
+        const shopPrices = {
+            "wooden_sword": { cookie: 50 }, "iron_sword": { cookie: 200 }, "steel_sword": { cookie: 500 },
+            "leather_cap": { cookie: 30 }, "iron_helmet": { cookie: 100 },
+            "leather_armor": { cookie: 60 }, "chainmail": { cookie: 250 },
+            "wooden_shield": { cookie: 40 }, "iron_shield": { cookie: 180 },
+            "speed_boots": { cookie: 70 }, "health_boots": { cookie: 150 },
+            "mana_ring": { cookie: 120 }, "power_amulet": { cookie: 300 }
+        };
+
+        async function loadGame() {
+            try {
+                const res = await fetch(`${API_BASE}/state`);
+                gameState = await res.json();
+                updateUI();
+            } catch (e) {
+                console.log('Using local state (server offline)');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('cookie-count').textContent = gameState.currencies.cookie;
+            document.getElementById('sausage-count').textContent = gameState.currencies.sausage;
+            document.getElementById('bread-count').textContent = gameState.currencies.bread;
+            document.getElementById('gold-count').textContent = gameState.currencies.gold;
+
+            document.getElementById('hp').textContent = gameState.stats.hp;
+            document.getElementById('mp').textContent = gameState.stats.mp;
+            document.getElementById('damage').textContent = gameState.stats.damage;
+            document.getElementById('defense').textContent = gameState.stats.defense;
+
+            for (const slot of ['helmet', 'armor', 'weapon', 'shield', 'boots', 'accessory']) {
+                const el = document.getElementById(`eq-${slot}`);
+                const itemId = gameState.equipment[slot];
+                if (itemId && itemData[itemId]) {
+                    el.textContent = itemData[itemId].name;
+                    el.classList.remove('not-equipped');
+                } else {
+                    el.textContent = 'None';
+                    el.classList.add('not-equipped');
+                }
+            }
+        }
+
+        function moveCharacter() {
+            const area = document.querySelector('.game-area');
+            const char = document.getElementById('character');
+            const padding = 50;
+
+            const maxX = area.clientWidth - padding * 2;
+            const maxY = area.clientHeight - padding * 3;
+
+            const x = Math.random() * maxX + padding;
+            const y = Math.random() * maxY + padding;
+
+            char.style.left = `${x}px`;
+            char.style.top = `${y}px`;
+        }
+
+        async function addCurrency(type, amount) {
+            gameState.currencies[type] = (gameState.currencies[type] || 0) + amount;
+            updateUI();
+
+            try {
+                await fetch(`${API_BASE}/add_currency`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currency: type, amount })
+                });
+            } catch (e) {}
+        }
+
+        async function openShop() {
+            try {
+                const res = await fetch(`${API_BASE}/shop`);
+                const shop = await res.json();
+
+                const container = document.getElementById('shop-items');
+                container.innerHTML = '';
+
+                shop.forEach(item => {
+                    const price = Object.entries(shopPrices[item.id] || {}).map(([k, v]) => `${v} ${k}`).join(', ');
+                    const stats = Object.entries(item.stats).map(([k, v]) => `+${v} ${k}`).join(', ');
+
+                    const div = document.createElement('div');
+                    div.className = 'shop-item';
+                    div.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong> (${item.slot})
+                            <div class="item-stats">${stats}</div>
+                            <div class="item-cost">Price: ${price}</div>
+                        </div>
+                        <button class="btn btn-small" onclick="buyItem('${item.id}')">Buy</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                document.getElementById('shop-modal').classList.add('active');
+            } catch (e) {
+                alert('Server offline. Cannot open shop.');
+            }
+        }
+
+        async function buyItem(itemId) {
+            try {
+                const res = await fetch(`${API_BASE}/buy`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemId })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    gameState = result.state;
+                    updateUI();
+                    alert('Item purchased!');
+                } else {
+                    alert(result.message);
+                }
+            } catch (e) {
+                alert('Server offline. Cannot buy item.');
+            }
+        }
+
+        async function openInventory() {
+            const invList = document.getElementById('inventory-list');
+            invList.innerHTML = '';
+
+            if (gameState.inventory.length === 0) {
+                invList.innerHTML = '<p>No items in inventory</p>';
+            } else {
+                gameState.inventory.forEach(itemId => {
+                    const item = itemData[itemId];
+                    if (!item) return;
+
+                    const stats = Object.entries(item.stats).map(([k, v]) => `+${v} ${k}`).join(', ');
+                    const div = document.createElement('div');
+                    div.className = 'inventory-item';
+                    div.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong> (${item.slot})
+                            <div class="item-stats">${stats}</div>
+                        </div>
+                        <button class="btn btn-small" onclick="equipItem('${itemId}')">Equip</button>
+                    `;
+                    invList.appendChild(div);
+                });
+            }
+
+            const eqList = document.getElementById('equipped-list');
+            eqList.innerHTML = '';
+            for (const [slot, itemId] of Object.entries(gameState.equipment)) {
+                const item = itemId ? itemData[itemId] : null;
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${slot.charAt(0).toUpperCase() + slot.slice(1)}</strong>: ${item ? item.name : 'Empty'}
+                    </div>
+                    ${item ? `<button class="btn btn-small" onclick="unequipItem('${slot}')">Unequip</button>` : ''}
+                `;
+                eqList.appendChild(div);
+            }
+
+            document.getElementById('inventory-modal').classList.add('active');
+        }
+
+        async function equipItem(itemId) {
+            const item = itemData[itemId];
+            if (!item) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/equip`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slot: item.slot, itemId })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    gameState = result.state;
+                    updateUI();
+                    openInventory();
+                }
+            } catch (e) {
+                alert('Server offline. Cannot equip item.');
+            }
+        }
+
+        async function unequipItem(slot) {
+            try {
+                const res = await fetch(`${API_BASE}/equip`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slot, itemId: null })
+                });
+                const result = await res.json();
+
+                if (result.status === 'success') {
+                    gameState = result.state;
+                    updateUI();
+                    openInventory();
+                }
+            } catch (e) {
+                alert('Server offline. Cannot unequip item.');
+            }
+        }
+
+        async function openQuests() {
+            try {
+                const res = await fetch(`${API_BASE}/quests`);
+                const quests = await res.json();
+
+                const container = document.getElementById('quest-list');
+                container.innerHTML = '';
+
+                quests.forEach(quest => {
+                    const div = document.createElement('div');
+                    div.className = 'quest-item';
+                    const reward = Object.entries(quest.reward).map(([k, v]) => `${v} ${k}`).join(', ');
+                    div.innerHTML = `
+                        <div>
+                            <strong>${quest.name}</strong>
+                            <div>${quest.description}</div>
+                            <div class="item-stats">Reward: ${reward}</div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+
+                document.getElementById('quests-modal').classList.add('active');
+            } catch (e) {
+                alert('Server offline. Cannot load quests.');
+            }
+        }
+
+        async function saveGame() {
+            try {
+                await fetch(`${API_BASE}/state`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(gameState)
+                });
+                alert('Game saved!');
+            } catch (e) {
+                alert('Server offline. Cannot save game.');
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modal.id);
+            });
+        });
+
+        setInterval(() => {
+            addCurrency('cookie', 1);
+        }, 1000);
+
+        setInterval(moveCharacter, 2000);
+
+        loadGame();
+        moveCharacter();
+    </script>
+</body>
+</html>
