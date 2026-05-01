@@ -1,8 +1,17 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import json
 from pathlib import Path
 
 app = Flask(__name__, static_folder="../static")
+CORS(app)
+
+
+@app.route("/")
+def serve_index():
+    return app.send_static_file("index.html")
+
+
 DATA_FILE = Path(__file__).parent / "save_data.json"
 
 DEFAULT_STATE = {
@@ -279,4 +288,4 @@ def add_currency():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8085)
