@@ -1,6 +1,6 @@
 {
   "currencies": {
-    "cookie": 640,
+    "cookie": 20,
     "sausage": 0,
     "bread": 0,
     "gold": 0
@@ -8,19 +8,21 @@
   "stats": {
     "hp": 100,
     "mp": 50,
-    "damage": 15,
+    "damage": 10,
     "defense": 5
+  },
+  "position": {
+    "x": 9,
+    "y": 2
   },
   "equipment": {
     "helmet": null,
     "armor": null,
-    "weapon": "wooden_sword",
+    "weapon": null,
     "shield": null,
     "boots": null,
     "accessory": null
   },
-  "inventory": [
-    "wooden_sword"
-  ],
+  "inventory": [],
   "quests": []
 }
