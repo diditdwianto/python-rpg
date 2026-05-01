@@ -17,6 +17,7 @@ DATA_FILE = Path(__file__).parent / "save_data.json"
 DEFAULT_STATE = {
     "currencies": {"cookie": 0, "sausage": 0, "bread": 0, "gold": 0},
     "stats": {"hp": 100, "mp": 50, "damage": 10, "defense": 5},
+    "position": {"x": 5, "y": 5},
     "equipment": {
         "helmet": None,
         "armor": None,
@@ -34,7 +35,7 @@ def load_state():
     if DATA_FILE.exists():
         with open(DATA_FILE, "r") as f:
             return json.load(f)
-    return DEFAULT_STATE.copy()
+    return json.loads(json.dumps(DEFAULT_STATE))
 
 
 def save_state(state):
@@ -219,15 +220,11 @@ def equip_item():
         "power_amulet": {"slot": "accessory", "stats": {"damage": 10, "mp": 20}},
     }
 
-    for item in shop.values():
-        if item["slot"] == slot:
-            for stat, val in item["stats"].items():
-                if stat in state["stats"]:
-                    state["stats"][stat] = DEFAULT_STATE["stats"][stat]
-                    for equipped_id in state["equipment"].values():
-                        if equipped_id and equipped_id in shop:
-                            for s, v in shop[equipped_id]["stats"].items():
-                                state["stats"][s] += v
+    state["stats"] = {"hp": 100, "mp": 50, "damage": 10, "defense": 5}
+    for equipped_id in state["equipment"].values():
+        if equipped_id and equipped_id in shop:
+            for stat, val in shop[equipped_id]["stats"].items():
+                state["stats"][stat] += val
 
     if item_id is None:
         state["equipment"][slot] = None
@@ -235,11 +232,24 @@ def equip_item():
         state["equipment"][slot] = item_id
         if item_id in shop:
             for stat, val in shop[item_id]["stats"].items():
-                if stat in state["stats"]:
-                    state["stats"][stat] += val
+                state["stats"][stat] += val
 
     save_state(state)
     return jsonify({"status": "success", "state": state})
+
+
+@app.route("/api/move", methods=["POST"])
+def move():
+    data = request.json
+    dx = data.get("dx", 0)
+    dy = data.get("dy", 0)
+
+    state = load_state()
+    state["position"]["x"] = max(0, min(19, state["position"].get("x", 5) + dx))
+    state["position"]["y"] = max(0, min(9, state["position"].get("y", 5) + dy))
+    save_state(state)
+
+    return jsonify({"status": "success", "position": state["position"]})
 
 
 @app.route("/api/quests", methods=["GET"])

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASCII Knight - Cookie RPG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -12,8 +13,8 @@
         }
 
         body {
-            background: #1a1a2e;
-            color: #00ff41;
+            background: #ffffff;
+            color: #000000;
             font-family: 'Courier New', monospace;
             min-height: 100vh;
             display: flex;
@@ -23,15 +24,15 @@
         }
 
         .game-container {
-            border: 3px double #00ff41;
+            border: 2px solid #000;
             padding: 20px;
-            max-width: 800px;
+            max-width: 700px;
             width: 100%;
-            background: #0f0f1a;
+            background: #fff;
         }
 
         .section {
-            border: 1px solid #00ff41;
+            border: 1px solid #000;
             padding: 10px;
             margin: 10px 0;
         }
@@ -41,44 +42,38 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: bold;
         }
 
         .currency {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
 
-        .currency-icon {
-            font-size: 20px;
+        .currency i {
+            width: 20px;
+            text-align: center;
         }
 
         .game-area {
-            height: 300px;
+            height: 220px;
             position: relative;
             overflow: hidden;
-            background: #0a0a12;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .game-border {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 2px solid #00ff41;
-            pointer-events: none;
-        }
-
-        #character {
-            position: absolute;
+        #game-canvas {
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            line-height: 1;
+            font-size: 18px;
+            line-height: 1.2;
             white-space: pre;
-            transition: all 0.5s ease;
-            color: #00ff41;
+            background: #fff;
+            padding: 10px;
         }
 
         .stats {
@@ -86,10 +81,12 @@
             flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
 
-        .stat {
-            font-size: 16px;
+        .stat i {
+            width: 18px;
         }
 
         .equipment {
@@ -100,9 +97,22 @@
         }
 
         .equip-slot {
-            border: 1px solid #00ff41;
+            border: 1px solid #000;
             padding: 5px 10px;
             font-size: 12px;
+            font-weight: bold;
+        }
+
+        .equip-slot .slot-name {
+            color: #666;
+        }
+
+        .equip-slot .item-name {
+            color: #000;
+        }
+
+        .equip-slot .item-name.empty {
+            color: #ccc;
         }
 
         .actions {
@@ -113,19 +123,20 @@
         }
 
         .btn {
-            background: #1a1a2e;
-            color: #00ff41;
-            border: 2px solid #00ff41;
-            padding: 10px 20px;
+            background: #fff;
+            color: #000;
+            border: 2px solid #000;
+            padding: 8px 16px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .btn:hover {
-            background: #00ff41;
-            color: #1a1a2e;
+            background: #000;
+            color: #fff;
         }
 
         .modal {
@@ -135,7 +146,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
             z-index: 100;
@@ -146,10 +157,10 @@
         }
 
         .modal-content {
-            background: #0f0f1a;
-            border: 2px solid #00ff41;
+            background: #fff;
+            border: 2px solid #000;
             padding: 20px;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -159,7 +170,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #00ff41;
+            border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 10px;
         }
@@ -167,13 +178,13 @@
         .close-btn {
             background: none;
             border: none;
-            color: #00ff41;
+            color: #000;
             font-size: 24px;
             cursor: pointer;
         }
 
         .shop-item, .inventory-item, .quest-item {
-            border: 1px solid #00ff41;
+            border: 1px solid #000;
             padding: 10px;
             margin: 5px 0;
             display: flex;
@@ -182,17 +193,31 @@
         }
 
         .shop-item:hover, .inventory-item:hover {
-            background: #00ff4120;
+            background: #f0f0f0;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+        }
+
+        .item-slot {
+            font-size: 12px;
+            color: #666;
         }
 
         .item-stats {
             font-size: 12px;
-            color: #00cc33;
+            color: #333;
         }
 
         .item-cost {
             font-size: 12px;
-            color: #ffcc00;
+            color: #000;
+            font-weight: bold;
         }
 
         .btn-small {
@@ -200,26 +225,22 @@
             font-size: 12px;
         }
 
-        h2, h3 {
-            text-align: center;
-        }
-
         .tabs {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            gap: 5px;
             margin-bottom: 10px;
         }
 
         .tab {
             padding: 5px 15px;
             cursor: pointer;
-            border: 1px solid #00ff41;
+            border: 1px solid #000;
+            font-weight: bold;
         }
 
         .tab.active {
-            background: #00ff41;
-            color: #1a1a2e;
+            background: #000;
+            color: #fff;
         }
 
         .tab-content {
@@ -230,49 +251,92 @@
             display: block;
         }
 
-        .not-equipped {
+        .controls-hint {
+            text-align: center;
+            font-size: 12px;
             color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="section currencies">
-            <div class="currency"><span class="currency-icon">🍪</span> Cookie: <span id="cookie-count">0</span></div>
-            <div class="currency"><span class="currency-icon">🌭</span> Sausage: <span id="sausage-count">0</span></div>
-            <div class="currency"><span class="currency-icon">🍞</span> Bread: <span id="bread-count">0</span></div>
-            <div class="currency"><span class="currency-icon">🪙</span> Gold: <span id="gold-count">0</span></div>
+            <div class="currency">
+                <i class="fa-solid fa-cookie"></i>
+                <span>Cookie:</span>
+                <span id="cookie-count">0</span>
+            </div>
+            <div class="currency">
+                <i class="fa-solid fa-pepper-hot"></i>
+                <span>Sausage:</span>
+                <span id="sausage-count">0</span>
+            </div>
+            <div class="currency">
+                <i class="fa-solid fa-bread-slice"></i>
+                <span>Bread:</span>
+                <span id="bread-count">0</span>
+            </div>
+            <div class="currency">
+                <i class="fa-solid fa-coins"></i>
+                <span>Gold:</span>
+                <span id="gold-count">0</span>
+            </div>
         </div>
 
         <div class="section game-area">
-            <div class="game-border"></div>
-            <div id="character">
-       ,,,,
-      /    \
-     | O  O |
-     |  __  |
-     | |  | |
-      \|__|/
-       |  |
-      /|  |\
-     / |  | \
-    /__|  |__\</div>
+            <div id="game-canvas"></div>
         </div>
+        <div class="controls-hint">Use Arrow Keys to move</div>
 
         <div class="section stats">
-            <div class="stat">❤️ HP: <span id="hp">100</span></div>
-            <div class="stat">💧 MP: <span id="mp">50</span></div>
-            <div class="stat">⚔️ Damage: <span id="damage">10</span></div>
-            <div class="stat">🛡️ Defense: <span id="defense">5</span></div>
+            <div class="stat">
+                <i class="fa-solid fa-heart"></i>
+                <span>HP:</span>
+                <span id="hp">100</span>
+            </div>
+            <div class="stat">
+                <i class="fa-solid fa-droplet"></i>
+                <span>MP:</span>
+                <span id="mp">50</span>
+            </div>
+            <div class="stat">
+                <i class="fa-solid fa-khanda"></i>
+                <span>DMG:</span>
+                <span id="damage">10</span>
+            </div>
+            <div class="stat">
+                <i class="fa-solid fa-shield"></i>
+                <span>DEF:</span>
+                <span id="defense">5</span>
+            </div>
         </div>
 
         <div class="section equipment">
-            <div class="equip-slot">Helmet: <span id="eq-helmet" class="not-equipped">None</span></div>
-            <div class="equip-slot">Armor: <span id="eq-armor" class="not-equipped">None</span></div>
-            <div class="equip-slot">Weapon: <span id="eq-weapon" class="not-equipped">None</span></div>
-            <div class="equip-slot">Shield: <span id="eq-shield" class="not-equipped">None</span></div>
-            <div class="equip-slot">Boots: <span id="eq-boots" class="not-equipped">None</span></div>
-            <div class="equip-slot">Accessory: <span id="eq-accessory" class="not-equipped">None</span></div>
+            <div class="equip-slot">
+                <span class="slot-name">Helmet:</span>
+                <span id="eq-helmet" class="item-name empty">None</span>
+            </div>
+            <div class="equip-slot">
+                <span class="slot-name">Armor:</span>
+                <span id="eq-armor" class="item-name empty">None</span>
+            </div>
+            <div class="equip-slot">
+                <span class="slot-name">Weapon:</span>
+                <span id="eq-weapon" class="item-name empty">None</span>
+            </div>
+            <div class="equip-slot">
+                <span class="slot-name">Shield:</span>
+                <span id="eq-shield" class="item-name empty">None</span>
+            </div>
+            <div class="equip-slot">
+                <span class="slot-name">Boots:</span>
+                <span id="eq-boots" class="item-name empty">None</span>
+            </div>
+            <div class="equip-slot">
+                <span class="slot-name">Accessory:</span>
+                <span id="eq-accessory" class="item-name empty">None</span>
+            </div>
         </div>
 
         <div class="section actions">
@@ -320,20 +384,18 @@
 
     <script>
         const API_BASE = 'http://localhost:8085/api';
-        const KNIGHT_SPRITE = `       ,,,,
-      /    \\
-     | O  O |
-     |  __  |
-     | |  | |
-      \\|__|/
-       |  |
-      /|  |\\
-     / |  | \\
-    /__|  |__\\`;
+        const GRID_WIDTH = 20;
+        const GRID_HEIGHT = 10;
+        const KNIGHT_SPRITE = [
+            "  O  ",
+            " /|\\ ",
+            " / \\ "
+        ];
 
         let gameState = {
             currencies: { cookie: 0, sausage: 0, bread: 0, gold: 0 },
             stats: { hp: 100, mp: 50, damage: 10, defense: 5 },
+            position: { x: 5, y: 5 },
             equipment: { helmet: null, armor: null, weapon: null, shield: null, boots: null, accessory: null },
             inventory: []
         };
@@ -349,7 +411,7 @@
             "wooden_shield": { name: "Wooden Shield", slot: "shield", stats: { defense: 3, hp: 10 } },
             "iron_shield": { name: "Iron Shield", slot: "shield", stats: { defense: 8, hp: 25 } },
             "speed_boots": { name: "Speed Boots", slot: "boots", stats: { hp: 15 } },
-            "health_boots": { name: "Health Boots", slot: "boots", stats: { hp: 40 } },
+            "health_boots": { name": "Health Boots", slot: "boots", stats: { hp: 40 } },
             "mana_ring": { name: "Mana Ring", slot: "accessory", stats: { mp: 30, damage: 3 } },
             "power_amulet": { name: "Power Amulet", slot: "accessory", stats: { damage: 10, mp: 20 } }
         };
@@ -368,6 +430,7 @@
                 const res = await fetch(`${API_BASE}/state`);
                 gameState = await res.json();
                 updateUI();
+                renderGame();
             } catch (e) {
                 console.log('Using local state (server offline)');
             }
@@ -389,27 +452,55 @@
                 const itemId = gameState.equipment[slot];
                 if (itemId && itemData[itemId]) {
                     el.textContent = itemData[itemId].name;
-                    el.classList.remove('not-equipped');
+                    el.classList.remove('empty');
                 } else {
                     el.textContent = 'None';
-                    el.classList.add('not-equipped');
+                    el.classList.add('empty');
                 }
             }
         }
 
-        function moveCharacter() {
-            const area = document.querySelector('.game-area');
-            const char = document.getElementById('character');
-            const padding = 50;
+        function renderGame() {
+            const canvas = document.getElementById('game-canvas');
+            const grid = [];
 
-            const maxX = area.clientWidth - padding * 2;
-            const maxY = area.clientHeight - padding * 3;
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                grid.push(Array(GRID_WIDTH).fill(' . '));
+            }
 
-            const x = Math.random() * maxX + padding;
-            const y = Math.random() * maxY + padding;
+            const px = gameState.position.x;
+            const py = gameState.position.y;
 
-            char.style.left = `${x}px`;
-            char.style.top = `${y}px`;
+            for (let i = 0; i < KNIGHT_SPRITE.length; i++) {
+                for (let j = 0; j < KNIGHT_SPRITE[i].length; j++) {
+                    const gy = py + i;
+                    const gx = px + j;
+                    if (gy >= 0 && gy < GRID_HEIGHT && gx >= 0 && gx < GRID_WIDTH) {
+                        grid[gy][gx] = KNIGHT_SPRITE[i][j];
+                    }
+                }
+            }
+
+            canvas.textContent = grid.map(row => row.join('')).join('\n');
+        }
+
+        async function moveCharacter(dx, dy) {
+            const newX = gameState.position.x + dx;
+            const newY = gameState.position.y + dy;
+
+            if (newX >= 0 && newX < GRID_WIDTH && newY >= 0 && newY < GRID_HEIGHT) {
+                gameState.position.x = newX;
+                gameState.position.y = newY;
+                renderGame();
+
+                try {
+                    await fetch(`${API_BASE}/move`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dx, dy })
+                    });
+                } catch (e) {}
+            }
         }
 
         async function addCurrency(type, amount) {
@@ -440,8 +531,9 @@
                     const div = document.createElement('div');
                     div.className = 'shop-item';
                     div.innerHTML = `
-                        <div>
-                            <strong>${item.name}</strong> (${item.slot})
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-slot">${item.slot}</div>
                             <div class="item-stats">${stats}</div>
                             <div class="item-cost">Price: ${price}</div>
                         </div>
@@ -481,7 +573,7 @@
             const invList = document.getElementById('inventory-list');
             invList.innerHTML = '';
 
-            if (gameState.inventory.length === 0) {
+            if (!gameState.inventory || gameState.inventory.length === 0) {
                 invList.innerHTML = '<p>No items in inventory</p>';
             } else {
                 gameState.inventory.forEach(itemId => {
@@ -492,8 +584,9 @@
                     const div = document.createElement('div');
                     div.className = 'inventory-item';
                     div.innerHTML = `
-                        <div>
-                            <strong>${item.name}</strong> (${item.slot})
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-slot">${item.slot}</div>
                             <div class="item-stats">${stats}</div>
                         </div>
                         <button class="btn btn-small" onclick="equipItem('${itemId}')">Equip</button>
@@ -509,8 +602,8 @@
                 const div = document.createElement('div');
                 div.className = 'inventory-item';
                 div.innerHTML = `
-                    <div>
-                        <strong>${slot.charAt(0).toUpperCase() + slot.slice(1)}</strong>: ${item ? item.name : 'Empty'}
+                    <div class="item-info">
+                        <div class="item-name">${slot.charAt(0).toUpperCase() + slot.slice(1)}: ${item ? item.name : 'Empty'}</div>
                     </div>
                     ${item ? `<button class="btn btn-small" onclick="unequipItem('${slot}')">Unequip</button>` : ''}
                 `;
@@ -570,14 +663,14 @@
                 container.innerHTML = '';
 
                 quests.forEach(quest => {
+                    const reward = Object.entries(quest.reward).map(([k, v]) => `${v} ${k}`).join(', ');
                     const div = document.createElement('div');
                     div.className = 'quest-item';
-                    const reward = Object.entries(quest.reward).map(([k, v]) => `${v} ${k}`).join(', ');
                     div.innerHTML = `
-                        <div>
-                            <strong>${quest.name}</strong>
-                            <div>${quest.description}</div>
-                            <div class="item-stats">Reward: ${reward}</div>
+                        <div class="item-info">
+                            <div class="item-name">${quest.name}</div>
+                            <div class="item-stats">${quest.description}</div>
+                            <div class="item-cost">Reward: ${reward}</div>
                         </div>
                     `;
                     container.appendChild(div);
@@ -619,14 +712,32 @@
             });
         });
 
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    e.preventDefault();
+                    moveCharacter(0, -1);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    moveCharacter(0, 1);
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    moveCharacter(-1, 0);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    moveCharacter(1, 0);
+                    break;
+            }
+        });
+
         setInterval(() => {
             addCurrency('cookie', 1);
-        }, 1000);
-
-        setInterval(moveCharacter, 2000);
+        }, 2000);
 
         loadGame();
-        moveCharacter();
     </script>
 </body>
 </html>
